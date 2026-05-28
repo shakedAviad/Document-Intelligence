@@ -8,9 +8,9 @@ public class InMemorySessionStoreTests
     [Fact]
     public async Task SaveAndRetrieveSession_Succeeds()
     {
-        InMemorySessionStore store = new InMemorySessionStore();
+        InMemorySessionStore store = new();
 
-        AgentSession session = new AgentSession { AgentName = "TestAgent" };
+        AgentSession session = new() { AgentName = "TestAgent" };
         session.Messages.Add("hello");
 
         await store.SaveAsync(session);
@@ -25,7 +25,7 @@ public class InMemorySessionStoreTests
     [Fact]
     public async Task UnknownSession_ReturnsNull()
     {
-        InMemorySessionStore store = new InMemorySessionStore();
+        InMemorySessionStore store = new();
 
         AgentSession? fetched = await store.GetAsync("DoesNotExist");
 
@@ -35,9 +35,9 @@ public class InMemorySessionStoreTests
     [Fact]
     public async Task SessionLookup_IsCaseInsensitive()
     {
-        InMemorySessionStore store = new InMemorySessionStore();
+        InMemorySessionStore store = new();
 
-        AgentSession session = new AgentSession { AgentName = "CaseAgent" };
+        AgentSession session = new() { AgentName = "CaseAgent" };
         session.Messages.Add("m");
 
         await store.SaveAsync(session);
@@ -51,9 +51,9 @@ public class InMemorySessionStoreTests
     [Fact]
     public async Task StoredMessages_PersistCorrectly()
     {
-        InMemorySessionStore store = new InMemorySessionStore();
+        InMemorySessionStore store = new();
 
-        AgentSession session = new AgentSession { AgentName = "PersistAgent" };
+        AgentSession session = new() { AgentName = "PersistAgent" };
         session.Messages.Add("one");
         session.Messages.Add("two");
 
@@ -63,6 +63,6 @@ public class InMemorySessionStoreTests
 
         fetched.Should().NotBeNull();
         fetched!.Messages.Should().HaveCount(2);
-        fetched.Messages.Should().ContainInOrder(new[] { "one", "two" });
+        fetched.Messages.Should().ContainInOrder(["one", "two"]);
     }
 }

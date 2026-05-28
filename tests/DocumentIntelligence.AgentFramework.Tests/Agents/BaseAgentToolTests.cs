@@ -24,7 +24,7 @@ public class BaseAgentToolTests
     [Fact]
     public async Task ToolNameMatching_IsCaseInsensitive()
     {
-        var agent = new AgentWithToolCase();
+        AgentWithToolCase agent = new();
 
         AgentResult result = await agent.ExecuteAsync("input");
 
@@ -35,7 +35,7 @@ public class BaseAgentToolTests
     [Fact]
     public async Task UnknownTool_ReturnsToolNotFound()
     {
-        var agent = new AgentWithMissingTool();
+        AgentWithMissingTool agent = new();
 
         AgentResult result = await agent.ExecuteAsync("input");
 

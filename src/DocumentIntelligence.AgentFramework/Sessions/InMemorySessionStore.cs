@@ -10,10 +10,7 @@ public sealed class InMemorySessionStore : ISessionStore
 
     public Task SaveAsync(AgentSession session, CancellationToken cancellationToken = default)
     {
-        if (session is null)
-        {
-            throw new System.ArgumentNullException(nameof(session));
-        }
+        ArgumentNullException.ThrowIfNull(session);
 
         _store[session.AgentName] = session;
         return Task.CompletedTask;

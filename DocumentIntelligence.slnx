@@ -1,4 +1,9 @@
 <Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path="README.md" />
+  </Folder>
   <Folder Name="/src/">
     <Project Path="src/DocumentIntelligence.AgentFramework/DocumentIntelligence.AgentFramework.csproj" />
     <Project Path="src/DocumentIntelligence.Console/DocumentIntelligence.Console.csproj" />
