@@ -1,6 +1,11 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using DocumentIntelligence.AgentFramework.Models;
 using DocumentIntelligence.AgentFramework.Tools;
-using System.Collections.ObjectModel;
 
 namespace DocumentIntelligence.AgentFramework.Agents;
 
@@ -25,7 +30,7 @@ public abstract class BaseAgent : IAgent
 
     public async Task<AgentResult> ExecuteAsync(string input, CancellationToken cancellationToken = default)
     {
-        List<AgentExecutionStep> steps = new List<AgentExecutionStep>();
+        List<AgentExecutionStep> steps = new();
         try
         {
             _currentSteps = steps;
@@ -50,9 +55,12 @@ public abstract class BaseAgent : IAgent
 
     protected async Task<ToolResult> ExecuteToolAsync(ToolExecutionRequest request, CancellationToken cancellationToken = default)
     {
-        if (request is null) throw new ArgumentNullException(nameof(request));
+        if (request is null)
+        {
+            throw new ArgumentNullException(nameof(request));
+        }
 
-        ITool? tool = Tools == null ? null : System.Linq.Enumerable.FirstOrDefault(Tools, t => string.Equals(t.Name, request.ToolName, StringComparison.OrdinalIgnoreCase));
+        ITool? tool = Tools is null ? null : Tools.FirstOrDefault(t => string.Equals(t.Name, request.ToolName, StringComparison.OrdinalIgnoreCase));
 
         if (tool is null)
         {
