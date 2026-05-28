@@ -1,5 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <ItemGroup>
+    <ProjectReference Include="..\DocumentIntelligence.AgentFramework\DocumentIntelligence.AgentFramework.csproj" />
+    <ProjectReference Include="..\DocumentIntelligence.MiniRag\DocumentIntelligence.MiniRag.csproj" />
+  </ItemGroup>
+
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>

@@ -1,9 +1,14 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/DocumentIntelligence.AgentFramework/DocumentIntelligence.AgentFramework.csproj" />
     <Project Path="src/DocumentIntelligence.Console/DocumentIntelligence.Console.csproj" />
     <Project Path="src/DocumentIntelligence.Core/DocumentIntelligence.Core.csproj" />
+    <Project Path="src/DocumentIntelligence.MiniRag/DocumentIntelligence.MiniRag.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/DocumentIntelligence.AgentFramework.Tests/DocumentIntelligence.AgentFramework.Tests.csproj" />
+    <Project Path="tests/DocumentIntelligence.Core.Tests/DocumentIntelligence.Core.Tests.csproj" />
+    <Project Path="tests/DocumentIntelligence.MiniRag.Tests/DocumentIntelligence.MiniRag.Tests.csproj" />
     <Project Path="tests/DocumentIntelligence.Tests/DocumentIntelligence.Tests.csproj" />
   </Folder>
 </Solution>
