@@ -6,5 +6,5 @@ namespace DocumentIntelligence.AgentFramework.Llm;
 
 public interface IChatModel
 {
-    Task<ChatModelResponse> CompleteAsync(IReadOnlyList<string> messages, CancellationToken cancellationToken = default);
+    Task<ChatModelResponse> CompleteAsync(IReadOnlyList<ChatMessage> messages, CancellationToken cancellationToken = default);
 }

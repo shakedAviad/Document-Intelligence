@@ -22,7 +22,7 @@ public class LlmContractsTests
     {
         IChatModel model = new FakeChatModel();
 
-        IReadOnlyList<string> messages = new List<string> { "hi" };
+        IReadOnlyList<ChatMessage> messages = new List<ChatMessage> { new ChatMessage(ChatRole.User, "hi") };
 
         ChatModelResponse resp = await model.CompleteAsync(messages, CancellationToken.None);
 
@@ -44,9 +44,9 @@ public class LlmContractsTests
 
     private class FakeChatModel : IChatModel
     {
-        public Task<ChatModelResponse> CompleteAsync(IReadOnlyList<string> messages, CancellationToken cancellationToken = default)
+        public Task<ChatModelResponse> CompleteAsync(IReadOnlyList<ChatMessage> messages, CancellationToken cancellationToken = default)
         {
-            var content = $"echo: {messages[0]}";
+            var content = $"echo: {messages[0].Content}";
             ChatModelResponse resp = new(content);
             return Task.FromResult(resp);
         }
