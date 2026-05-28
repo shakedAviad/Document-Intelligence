@@ -6,15 +6,22 @@ using System.Threading;
 using System.Threading.Tasks;
 using DocumentIntelligence.AgentFramework.Models;
 using DocumentIntelligence.AgentFramework.Tools;
+using DocumentIntelligence.AgentFramework.Llm;
+using DocumentIntelligence.AgentFramework.Reasoning;
 
 namespace DocumentIntelligence.AgentFramework.Agents;
 
-public abstract class BaseAgent : IAgent
+public abstract class BaseAgent(IChatModel chatModel, IAgentDecisionParser decisionParser) : IAgent
 {
     public abstract string Name { get; }
 
     // Expose tools to derived agents. Default is empty.
     protected virtual IReadOnlyList<ITool> Tools => Array.Empty<ITool>();
+
+    // Reasoning/instructions configuration
+    protected virtual string Instructions => "You are a helpful generic agent.";
+
+    protected virtual AgentExecutionOptions ExecutionOptions => new();
 
     // Internal holder for the current execution steps so helpers can add steps.
     private List<AgentExecutionStep>? _currentSteps;
@@ -36,13 +43,43 @@ public abstract class BaseAgent : IAgent
             _currentSteps = steps;
             steps.Add(new AgentExecutionStep("Execution started"));
 
-            string response = await ProcessAsync(input, cancellationToken).ConfigureAwait(false);
+            var messages = new List<ChatMessage>
+            {
+                new ChatMessage(ChatRole.System, Instructions),
+                new ChatMessage(ChatRole.User, input)
+            };
 
+            for (int i = 0; i < ExecutionOptions.MaxReasoningIterations; i++)
+            {
+                ChatModelResponse modelResponse = await chatModel.CompleteAsync(messages, cancellationToken).ConfigureAwait(false);
+
+                AgentDecision decision = decisionParser.Parse(modelResponse.Content);
+
+                if (decision.Action == AgentAction.FinalAnswer)
+                {
+                    string final = decision.FinalAnswer ?? string.Empty;
+                    steps.Add(new AgentExecutionStep("Execution completed"));
+                    ReadOnlyCollection<AgentExecutionStep> readonlySteps = steps.AsReadOnly();
+                    return new AgentResult(Name, final, readonlySteps);
+                }
+
+                if (decision.Action == AgentAction.Tool)
+                {
+                    // append assistant decision content
+                    messages.Add(new ChatMessage(ChatRole.Assistant, modelResponse.Content));
+
+                    var toolRequest = new ToolExecutionRequest(decision.ToolName ?? string.Empty, decision.ToolInput ?? string.Empty);
+                    ToolResult toolResult = await ExecuteToolAsync(toolRequest, cancellationToken).ConfigureAwait(false);
+
+                    // append tool observation as user message
+                    messages.Add(new ChatMessage(ChatRole.User, toolResult.Output));
+                }
+            }
+
+            // Max steps reached
             steps.Add(new AgentExecutionStep("Execution completed"));
-
-            ReadOnlyCollection<AgentExecutionStep> readonlySteps = steps.AsReadOnly();
-
-            return new AgentResult(Name, response, readonlySteps);
+            ReadOnlyCollection<AgentExecutionStep> finalSteps = steps.AsReadOnly();
+            return new AgentResult(Name, "Max steps reached", finalSteps);
         }
         finally
         {

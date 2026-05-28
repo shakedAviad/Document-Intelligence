@@ -2,6 +2,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using DocumentIntelligence.AgentFramework.Agents;
 using DocumentIntelligence.AgentFramework.Models;
+using DocumentIntelligence.AgentFramework.Llm;
+using DocumentIntelligence.AgentFramework.Reasoning;
 using FluentAssertions;
 using Xunit;
 
@@ -26,11 +28,22 @@ public class BaseAgentTests
 
     private class TestAgent : BaseAgent
     {
+        public TestAgent()
+            : base(new FinalAnswerChatModel(), new JsonAgentDecisionParser())
+        {
+        }
+
         public override string Name => "TestAgent";
 
-        protected override Task<string> ProcessAsync(string input, CancellationToken cancellationToken = default)
+        private class FinalAnswerChatModel : IChatModel
         {
-            return Task.FromResult("Processed: " + input);
+            public Task<ChatModelResponse> CompleteAsync(IReadOnlyList<ChatMessage> messages, CancellationToken cancellationToken = default)
+            {
+                // Return a JSON decision with final answer based on the last user message
+                string user = messages[^1].Content;
+                string json = $"{{\"Action\":\"FinalAnswer\",\"FinalAnswer\":\"Processed: {user}\"}}";
+                return Task.FromResult(new ChatModelResponse(json));
+            }
         }
     }
 }
