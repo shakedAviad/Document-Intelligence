@@ -1,7 +1,5 @@
-using System;
 using DocumentIntelligence.AgentFramework.Models;
 using FluentAssertions;
-using Xunit;
 
 namespace DocumentIntelligence.AgentFramework.Tests.Agents;
 

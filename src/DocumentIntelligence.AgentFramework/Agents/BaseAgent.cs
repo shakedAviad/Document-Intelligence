@@ -1,17 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+using DocumentIntelligence.AgentFramework.Llm;
 using DocumentIntelligence.AgentFramework.Models;
 using DocumentIntelligence.AgentFramework.Tools;
-using DocumentIntelligence.AgentFramework.Llm;
-using DocumentIntelligence.AgentFramework.Reasoning;
+using System.Collections.ObjectModel;
+using System.Text.Json;
 
 namespace DocumentIntelligence.AgentFramework.Agents;
 
-public abstract class BaseAgent(IChatModel chatModel, IAgentDecisionParser decisionParser) : IAgent
+public abstract class BaseAgent(IChatModel chatModel) : IAgent
 {
     public abstract string Name { get; }
 
@@ -21,7 +16,47 @@ public abstract class BaseAgent(IChatModel chatModel, IAgentDecisionParser decis
     // Reasoning/instructions configuration
     protected virtual string Instructions => "You are a helpful generic agent.";
 
+    protected virtual string ResponseFormatInstructions =>
+        "The model must return ONLY valid JSON matching the AgentDecision schema:\n" +
+        "{\n  \"action\": \"FinalAnswer\" | \"Tool\",\n  \"toolName\": \"tool name or null\",\n  \"toolInput\": \"tool input or null\",\n  \"finalAnswer\": \"final answer or null\"\n}";
+
     protected virtual AgentExecutionOptions ExecutionOptions => new();
+
+    protected virtual string BuildSystemPrompt()
+    {
+        List<string> lines = [];
+        lines.Add($"Agent: {Name}");
+        lines.Add(string.Empty);
+        lines.Add(Instructions);
+        lines.Add(string.Empty);
+        lines.Add("Available tools:");
+
+        if (Tools is null || Tools.Count == 0)
+        {
+            lines.Add("No tools are available.");
+        }
+        else
+        {
+            foreach (ITool tool in Tools)
+            {
+                string desc = tool.Description ?? string.Empty;
+                if (string.IsNullOrWhiteSpace(desc))
+                {
+                    lines.Add($"- {tool.Name}");
+                }
+                else
+                {
+                    lines.Add($"- {tool.Name}: {desc}");
+                }
+            }
+        }
+
+        lines.Add(string.Empty);
+        lines.Add("Response format instructions:");
+        lines.Add(ResponseFormatInstructions);
+
+        return string.Join('\n', lines);
+    }
 
     // Internal holder for the current execution steps so helpers can add steps.
     private List<AgentExecutionStep>? _currentSteps;
@@ -43,17 +78,20 @@ public abstract class BaseAgent(IChatModel chatModel, IAgentDecisionParser decis
             _currentSteps = steps;
             steps.Add(new AgentExecutionStep("Execution started"));
 
-            var messages = new List<ChatMessage>
+            List<ChatMessage> messages = new List<ChatMessage>
             {
-                new ChatMessage(ChatRole.System, Instructions),
+                new ChatMessage(ChatRole.System, BuildSystemPrompt()),
                 new ChatMessage(ChatRole.User, input)
             };
 
             for (int i = 0; i < ExecutionOptions.MaxReasoningIterations; i++)
             {
-                ChatModelResponse modelResponse = await chatModel.CompleteAsync(messages, cancellationToken).ConfigureAwait(false);
+                AgentDecision? decision = await chatModel.CompleteStructuredAsync<AgentDecision>(messages, cancellationToken).ConfigureAwait(false);
 
-                AgentDecision decision = decisionParser.Parse(modelResponse.Content);
+                if (decision is null)
+                {
+                    throw new InvalidOperationException("Chat model returned null decision");
+                }
 
                 if (decision.Action == AgentAction.FinalAnswer)
                 {
@@ -65,10 +103,11 @@ public abstract class BaseAgent(IChatModel chatModel, IAgentDecisionParser decis
 
                 if (decision.Action == AgentAction.Tool)
                 {
-                    // append assistant decision content
-                    messages.Add(new ChatMessage(ChatRole.Assistant, modelResponse.Content));
+                    // append assistant decision content (structured)
+                    string serialized = JsonSerializer.Serialize(decision);
+                    messages.Add(new ChatMessage(ChatRole.Assistant, serialized));
 
-                    var toolRequest = new ToolExecutionRequest(decision.ToolName ?? string.Empty, decision.ToolInput ?? string.Empty);
+                    ToolExecutionRequest toolRequest = new ToolExecutionRequest(decision.ToolName ?? string.Empty, decision.ToolInput ?? string.Empty);
                     ToolResult toolResult = await ExecuteToolAsync(toolRequest, cancellationToken).ConfigureAwait(false);
 
                     // append tool observation as user message

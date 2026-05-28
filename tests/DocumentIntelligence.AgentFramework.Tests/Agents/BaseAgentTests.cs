@@ -1,11 +1,7 @@
-using System.Threading;
-using System.Threading.Tasks;
 using DocumentIntelligence.AgentFramework.Agents;
-using DocumentIntelligence.AgentFramework.Models;
 using DocumentIntelligence.AgentFramework.Llm;
-using DocumentIntelligence.AgentFramework.Reasoning;
+using DocumentIntelligence.AgentFramework.Models;
 using FluentAssertions;
-using Xunit;
 
 namespace DocumentIntelligence.AgentFramework.Tests.Agents;
 
@@ -14,9 +10,9 @@ public class BaseAgentTests
     [Fact]
     public async Task BaseAgent_Process_ReturnsProcessedResponseAndSteps()
     {
-        var agent = new TestAgent();
+        TestAgent agent = new TestAgent();
 
-        var result = await agent.ExecuteAsync("input");
+        AgentResult result = await agent.ExecuteAsync("input");
 
         result.AgentName.Should().Be("TestAgent");
         result.Response.Should().Be("Processed: input");
@@ -29,7 +25,7 @@ public class BaseAgentTests
     private class TestAgent : BaseAgent
     {
         public TestAgent()
-            : base(new FinalAnswerChatModel(), new JsonAgentDecisionParser())
+            : base(new FinalAnswerChatModel())
         {
         }
 
@@ -39,10 +35,17 @@ public class BaseAgentTests
         {
             public Task<ChatModelResponse> CompleteAsync(IReadOnlyList<ChatMessage> messages, CancellationToken cancellationToken = default)
             {
-                // Return a JSON decision with final answer based on the last user message
                 string user = messages[^1].Content;
                 string json = $"{{\"Action\":\"FinalAnswer\",\"FinalAnswer\":\"Processed: {user}\"}}";
                 return Task.FromResult(new ChatModelResponse(json));
+            }
+
+            public Task<AgentDecision?> CompleteStructuredAsync<AgentDecision>(IReadOnlyList<ChatMessage> messages, CancellationToken cancellationToken = default)
+                where AgentDecision : class
+            {
+                string user = messages[^1].Content;
+                Models.AgentDecision decision = new DocumentIntelligence.AgentFramework.Models.AgentDecision(DocumentIntelligence.AgentFramework.Models.AgentAction.FinalAnswer, null, null, $"Processed: {user}");
+                return Task.FromResult(decision as AgentDecision);
             }
         }
     }

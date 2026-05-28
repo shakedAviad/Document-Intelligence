@@ -1,7 +1,6 @@
 using DocumentIntelligence.AgentFramework.Agents;
 using DocumentIntelligence.AgentFramework.Llm;
 using DocumentIntelligence.AgentFramework.Models;
-using DocumentIntelligence.AgentFramework.Reasoning;
 using DocumentIntelligence.AgentFramework.Tools;
 using FluentAssertions;
 
@@ -13,9 +12,8 @@ public class BaseAgentReasoningTests
     public async Task ChatModelFinalAnswer_ReturnsFinal()
     {
         FinalAnswerChatModel chat = new FinalAnswerChatModel("The answer");
-        JsonAgentDecisionParser parser = new JsonAgentDecisionParser();
 
-        ReasoningAgent agent = new ReasoningAgent(chat, parser);
+        ReasoningAgent agent = new ReasoningAgent(chat);
 
         AgentResult result = await agent.ExecuteAsync("input");
 
@@ -31,9 +29,7 @@ public class BaseAgentReasoningTests
             "{\"Action\":\"FinalAnswer\",\"FinalAnswer\":\"Final after tool\"}"
         });
 
-        JsonAgentDecisionParser parser = new JsonAgentDecisionParser();
-
-        ReasoningAgent agent = new ReasoningAgent(chat, parser, new List<ITool> { new FakeTool("MyTool") });
+        ReasoningAgent agent = new ReasoningAgent(chat, new List<ITool> { new FakeTool("MyTool") });
 
         AgentResult result = await agent.ExecuteAsync("input");
 
@@ -45,9 +41,7 @@ public class BaseAgentReasoningTests
     public async Task MaxSteps_Protection_ReturnsMaxReached()
     {
         AlwaysToolChatModel chat = new AlwaysToolChatModel("LoopTool");
-        JsonAgentDecisionParser parser = new JsonAgentDecisionParser();
-
-        LimitedStepsAgent agent = new LimitedStepsAgent(chat, parser, new List<ITool> { new FakeTool("LoopTool") });
+        LimitedStepsAgent agent = new LimitedStepsAgent(chat, new List<ITool> { new FakeTool("LoopTool") });
 
         AgentResult result = await agent.ExecuteAsync("input");
 
@@ -58,8 +52,8 @@ public class BaseAgentReasoningTests
     {
         private readonly IReadOnlyList<ITool> _tools;
 
-        public ReasoningAgent(IChatModel chat, IAgentDecisionParser parser, IReadOnlyList<ITool>? tools = null)
-            : base(chat, parser)
+        public ReasoningAgent(IChatModel chat, IReadOnlyList<ITool>? tools = null)
+            : base(chat)
         {
             _tools = tools ?? new List<ITool>();
         }
@@ -134,9 +128,15 @@ public class BaseAgentReasoningTests
 
     private class FakeTool : ITool
     {
-        public FakeTool(string name) => Name = name;
+        public FakeTool(string name, string description = "")
+        {
+            Name = name;
+            Description = description;
+        }
 
         public string Name { get; }
+
+        public string Description { get; }
 
         public Task<ToolResult> ExecuteAsync(string input, CancellationToken cancellationToken = default)
         {

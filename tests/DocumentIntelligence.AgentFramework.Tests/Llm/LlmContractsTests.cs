@@ -1,9 +1,5 @@
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using DocumentIntelligence.AgentFramework.Llm;
 using FluentAssertions;
-using Xunit;
 
 namespace DocumentIntelligence.AgentFramework.Tests.Llm;
 
@@ -46,7 +42,7 @@ public class LlmContractsTests
     {
         public Task<ChatModelResponse> CompleteAsync(IReadOnlyList<ChatMessage> messages, CancellationToken cancellationToken = default)
         {
-            var content = $"echo: {messages[0].Content}";
+            string content = $"echo: {messages[0].Content}";
             ChatModelResponse resp = new(content);
             return Task.FromResult(resp);
         }
