@@ -1,4 +1,5 @@
 using DocumentIntelligence.AgentFramework.Llm;
+using DocumentIntelligence.AgentFramework.Models;
 using FluentAssertions;
 
 namespace DocumentIntelligence.AgentFramework.Tests.Llm;
@@ -18,7 +19,7 @@ public class LlmContractsTests
     {
         IChatModel model = new FakeChatModel();
 
-        IReadOnlyList<ChatMessage> messages = new List<ChatMessage> { new ChatMessage(ChatRole.User, "hi") };
+        IReadOnlyList<ChatMessage> messages = [new ChatMessage(ChatRole.User, "hi")];
 
         ChatModelResponse resp = await model.CompleteAsync(messages, CancellationToken.None);
 
@@ -46,13 +47,27 @@ public class LlmContractsTests
             ChatModelResponse resp = new(content);
             return Task.FromResult(resp);
         }
+
+        public Task<TResponse?> CompleteStructuredAsync<TResponse>(IReadOnlyList<ChatMessage> messages, CancellationToken cancellationToken = default)
+            where TResponse : class
+        {
+            // Return AgentDecision when requested, otherwise null
+            if (typeof(TResponse) == typeof(AgentDecision))
+            {
+                string content = messages[0].Content;
+                AgentDecision decision = new AgentDecision(AgentAction.FinalAnswer, null, null, $"echo: {content}");
+                return Task.FromResult(decision as TResponse);
+            }
+
+            return Task.FromResult<TResponse?>(null);
+        }
     }
 
     private class FakeEmbeddingModel : IEmbeddingModel
     {
         public Task<IReadOnlyList<float>> EmbedAsync(string input, CancellationToken cancellationToken = default)
         {
-            IReadOnlyList<float> vec = new float[] { 1f, 2f };
+            IReadOnlyList<float> vec = [1f, 2f];
             return Task.FromResult(vec);
         }
     }
