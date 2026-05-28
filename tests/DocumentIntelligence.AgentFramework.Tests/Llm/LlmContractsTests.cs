@@ -26,18 +26,7 @@ public class LlmContractsTests
         resp.Content.Should().Be("echo: hi");
     }
 
-    [Fact]
-    public async Task FakeEmbeddingModel_ReturnsExpectedVector()
-    {
-        IEmbeddingModel embedder = new FakeEmbeddingModel();
 
-        IReadOnlyList<float> vec = await embedder.EmbedAsync("x", CancellationToken.None);
-
-        vec.Should().NotBeNull();
-        vec.Should().HaveCount(2);
-        vec[0].Should().Be(1f);
-        vec[1].Should().Be(2f);
-    }
 
     private class FakeChatModel : IChatModel
     {
@@ -55,7 +44,7 @@ public class LlmContractsTests
             if (typeof(TResponse) == typeof(AgentDecision))
             {
                 string content = messages[0].Content;
-                AgentDecision decision = new AgentDecision(AgentAction.FinalAnswer, null, null, $"echo: {content}");
+                AgentDecision decision = new(AgentAction.FinalAnswer, null, null, $"echo: {content}");
                 return Task.FromResult(decision as TResponse);
             }
 
@@ -63,12 +52,5 @@ public class LlmContractsTests
         }
     }
 
-    private class FakeEmbeddingModel : IEmbeddingModel
-    {
-        public Task<IReadOnlyList<float>> EmbedAsync(string input, CancellationToken cancellationToken = default)
-        {
-            IReadOnlyList<float> vec = [1f, 2f];
-            return Task.FromResult(vec);
-        }
-    }
+
 }
