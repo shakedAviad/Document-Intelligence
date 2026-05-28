@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/DocumentIntelligence.Console/DocumentIntelligence.Console.csproj" />
+    <Project Path="src/DocumentIntelligence.Core/DocumentIntelligence.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/DocumentIntelligence.Tests/DocumentIntelligence.Tests.csproj" />
+  </Folder>
+</Solution>
