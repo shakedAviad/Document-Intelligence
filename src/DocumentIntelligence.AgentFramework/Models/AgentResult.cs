@@ -1,3 +1,5 @@
 namespace DocumentIntelligence.AgentFramework.Models;
 
-public sealed record AgentResult(string AgentName, string Response);
+using System.Collections.Generic;
+
+public sealed record AgentResult(string AgentName, string Response, IReadOnlyList<AgentExecutionStep> Steps);
