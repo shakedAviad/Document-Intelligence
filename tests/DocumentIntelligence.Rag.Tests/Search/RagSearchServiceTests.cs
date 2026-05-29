@@ -1,33 +1,29 @@
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.VectorData;
-using Microsoft.SemanticKernel.Connectors.InMemory;
+using Microsoft.Extensions.DependencyInjection;
+using DocumentIntelligence.Rag.DependencyInjection;
 using DocumentIntelligence.Rag.Indexing;
-using DocumentIntelligence.Rag.Mapping;
 using DocumentIntelligence.Rag.Models;
 using DocumentIntelligence.Rag.Search;
-using DocumentIntelligence.Rag.Text;
 using FluentAssertions;
 
 namespace DocumentIntelligence.Rag.Tests.Search;
 
 public class RagSearchServiceTests
 {
-    private static (RagIndexingService indexing, RagSearchService search, InMemoryVectorStore store) CreateServices()
+    private static ServiceProvider CreateProvider()
     {
-        var store = new InMemoryVectorStore();
-        var generator = new FakeEmbeddingGenerator();
-        var mapper = new RagDocumentMapper();
-
-        var indexing = new RagIndexingService(new ReflectionRagTextBuilder(), mapper, generator, store);
-        var search = new RagSearchService(generator, store, mapper);
-
-        return (indexing, search, store);
+        ServiceCollection services = [];
+        services.AddSingleton<IEmbeddingGenerator<string, Embedding<float>>, FakeEmbeddingGenerator>();
+        services.AddDocumentIntelligenceRag();
+        return services.BuildServiceProvider();
     }
 
     [Fact]
     public async Task SearchAsync_Should_Return_Relevant_Result()
     {
-        var (indexing, search, _) = CreateServices();
+        using ServiceProvider provider = CreateProvider();
+        IRagIndexingService indexing = provider.GetRequiredService<IRagIndexingService>();
+        IRagSearchService search = provider.GetRequiredService<IRagSearchService>();
 
         await indexing.IndexAsync<SalesInfo>(
         [
@@ -55,7 +51,8 @@ public class RagSearchServiceTests
     [Fact]
     public async Task SearchAsync_Should_Return_Empty_For_Whitespace_Query()
     {
-        var (_, search, _) = CreateServices();
+        using ServiceProvider provider = CreateProvider();
+        IRagSearchService search = provider.GetRequiredService<IRagSearchService>();
 
         IReadOnlyList<RagSearchResult> results = await search.SearchAsync("   ");
 
@@ -65,7 +62,8 @@ public class RagSearchServiceTests
     [Fact]
     public async Task SearchAsync_Should_Return_Empty_When_Top_Is_Zero_Or_Negative()
     {
-        var (_, search, _) = CreateServices();
+        using ServiceProvider provider = CreateProvider();
+        IRagSearchService search = provider.GetRequiredService<IRagSearchService>();
 
         IReadOnlyList<RagSearchResult> zeroResults = await search.SearchAsync("sales", top: 0);
         IReadOnlyList<RagSearchResult> negativeResults = await search.SearchAsync("sales", top: -1);
@@ -77,7 +75,8 @@ public class RagSearchServiceTests
     [Fact]
     public async Task SearchAsync_Should_Return_Empty_When_Collection_Is_Empty()
     {
-        var (_, search, _) = CreateServices();
+        using ServiceProvider provider = CreateProvider();
+        IRagSearchService search = provider.GetRequiredService<IRagSearchService>();
 
         IReadOnlyList<RagSearchResult> results = await search.SearchAsync("sales numbers", top: 5);
 
@@ -96,7 +95,7 @@ public class RagSearchServiceTests
             EmbeddingGenerationOptions? options = null,
             CancellationToken cancellationToken = default)
         {
-            var results = new List<Embedding<float>>();
+            List<Embedding<float>> results = [];
 
             foreach (string value in values)
             {
