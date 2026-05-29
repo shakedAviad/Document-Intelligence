@@ -2,7 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DocumentIntelligence.AgentFramework\DocumentIntelligence.AgentFramework.csproj" />
-    <ProjectReference Include="..\DocumentIntelligence.MiniRag\DocumentIntelligence.MiniRag.csproj" />
+    <ProjectReference Include="..\DocumentIntelligence.Rag\DocumentIntelligence.Rag.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

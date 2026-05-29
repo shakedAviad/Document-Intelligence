@@ -1,4 +1,4 @@
-namespace DocumentIntelligence.MiniRag.Models;
+﻿namespace DocumentIntelligence.Rag.Models;
 
 public sealed record DocumentChunk
 {

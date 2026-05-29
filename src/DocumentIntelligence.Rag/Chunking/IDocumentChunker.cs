@@ -1,6 +1,6 @@
-using DocumentIntelligence.MiniRag.Models;
+﻿using DocumentIntelligence.Rag.Models;
 
-namespace DocumentIntelligence.MiniRag.Chunking;
+namespace DocumentIntelligence.Rag.Chunking;
 
 public interface IDocumentChunker
 {

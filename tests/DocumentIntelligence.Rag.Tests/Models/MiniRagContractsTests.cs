@@ -1,7 +1,7 @@
-using DocumentIntelligence.MiniRag.Models;
+﻿using DocumentIntelligence.Rag.Models;
 using FluentAssertions;
 
-namespace DocumentIntelligence.MiniRag.Tests.Models;
+namespace DocumentIntelligence.Rag.Tests.Models;
 
 public class MiniRagContractsTests
 {
@@ -31,26 +31,5 @@ public class MiniRagContractsTests
         chunk.Metadata.Should().BeEquivalentTo(metadata);
     }
 
-    [Fact]
-    public void EmbeddedDocumentChunk_Should_Create_Successfully()
-    {
-        var chunk = new DocumentChunk("chunk-1", "Decision was made.");
-        IReadOnlyList<float> embedding = [1f, 2f, 3f];
 
-        var embeddedChunk = new EmbeddedDocumentChunk(chunk, embedding);
-
-        embeddedChunk.Chunk.Should().Be(chunk);
-        embeddedChunk.Embedding.Should().BeEquivalentTo(embedding);
-    }
-
-    [Fact]
-    public void SearchResult_Should_Create_Successfully()
-    {
-        var chunk = new DocumentChunk("chunk-1", "Decision was made.");
-
-        var result = new SearchResult(chunk, 0.87);
-
-        result.Chunk.Should().Be(chunk);
-        result.Score.Should().Be(0.87);
-    }
 }

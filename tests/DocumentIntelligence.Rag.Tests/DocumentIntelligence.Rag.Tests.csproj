@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\DocumentIntelligence.MiniRag\DocumentIntelligence.MiniRag.csproj" />
+    <ProjectReference Include="..\..\src\DocumentIntelligence.Rag\DocumentIntelligence.Rag.csproj" />
   </ItemGroup>
 
 </Project>

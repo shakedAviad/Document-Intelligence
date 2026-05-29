@@ -1,8 +1,8 @@
-using DocumentIntelligence.MiniRag.Chunking;
-using DocumentIntelligence.MiniRag.Models;
+﻿using DocumentIntelligence.Rag.Chunking;
+using DocumentIntelligence.Rag.Models;
 using FluentAssertions;
 
-namespace DocumentIntelligence.MiniRag.Tests.Chunking;
+namespace DocumentIntelligence.Rag.Tests.Chunking;
 
 public class DocumentChunkingContractsTests
 {
