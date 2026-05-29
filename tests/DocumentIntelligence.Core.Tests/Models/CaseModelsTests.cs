@@ -10,10 +10,10 @@ public class CaseModelsTests
     [Fact]
     public void CaseStep_HasCorrectProperties()
     {
-        CaseStep step = new("step-1", AgentDomain.Revenue, "What is Q1 revenue?");
+        CaseStep step = new("step-1", AgentDomain.Sales, "What is Q1 revenue?");
 
         step.StepId.Should().Be("step-1");
-        step.Domain.Should().Be(AgentDomain.Revenue);
+        step.Domain.Should().Be(AgentDomain.Sales);
         step.Question.Should().Be("What is Q1 revenue?");
     }
 
@@ -22,8 +22,8 @@ public class CaseModelsTests
     {
         IReadOnlyList<CaseStep> steps =
         [
-            new("step-1", AgentDomain.Revenue, "What is Q1 revenue?"),
-            new("step-2", AgentDomain.Knowledge, "Who is the account manager?")
+            new("step-1", AgentDomain.Sales, "What is Q1 revenue?"),
+            new("step-2", AgentDomain.Communication, "Who is the account manager?")
         ];
         CasePlan plan = new("Analyze account performance", steps);
 
@@ -35,7 +35,7 @@ public class CaseModelsTests
     public void CaseFinding_HasEvidenceAndReasoningSteps()
     {
         IReadOnlyList<AgentExecutionStep> reasoningSteps = [new("Checked revenue data")];
-        CaseFinding finding = new("step-1", AgentDomain.Revenue, "Q1 revenue was $1M", reasoningSteps);
+        CaseFinding finding = new("step-1", AgentDomain.Sales, "Q1 revenue was $1M", reasoningSteps);
 
         finding.Evidence.Should().Be("Q1 revenue was $1M");
         finding.ReasoningSteps.Count.Should().Be(1);
@@ -63,7 +63,7 @@ public class CaseModelsTests
     [Fact]
     public void CaseResult_WhenIncomplete_HasAdditionalSteps()
     {
-        IReadOnlyList<CaseStep> additionalSteps = [new("step-2", AgentDomain.Production, "Check production data")];
+        IReadOnlyList<CaseStep> additionalSteps = [new("step-2", AgentDomain.Technical, "Check production data")];
         CaseResult result = new(false, null, additionalSteps);
 
         result.IsComplete.Should().BeFalse();
@@ -76,8 +76,8 @@ public class CaseModelsTests
     {
         IReadOnlyList<CaseStep> steps =
         [
-            new("step-1", AgentDomain.Revenue, "What is Q1 revenue?"),
-            new("step-2", AgentDomain.Knowledge, "Who is the account manager?")
+            new("step-1", AgentDomain.Sales, "What is Q1 revenue?"),
+            new("step-2", AgentDomain.Communication, "Who is the account manager?")
         ];
         CasePlan plan = new("Analyze account performance", steps);
 
