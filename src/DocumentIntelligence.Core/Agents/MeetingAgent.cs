@@ -5,21 +5,20 @@ using DocumentIntelligence.Core.Tools;
 
 namespace DocumentIntelligence.Core.Agents;
 
-public sealed class SalesAgent(
+public sealed class MeetingAgent(
     IChatModel chatModel,
     ReadFileTool readFileTool,
     SearchDocumentsTool searchDocumentsTool) : BaseAgent(chatModel)
 {
-    public override string Name => "SalesAgent";
+    public override string Name => "MeetingAgent";
 
     protected override IReadOnlyList<ITool> Tools => [readFileTool, searchDocumentsTool];
 
     protected override string Instructions =>
         """
-        You are a sales analyst. You investigate sales data in sales-q1.csv.
-        Focus on: revenue figures, trends, regional performance, product comparisons.
-        Note: some unit prices may include currency symbols (e.g. $49.00) — treat as numbers.
-        Use SearchDocuments to find relevant data, then ReadFile to read sales-q1.csv.
+        You are a meeting analyst. You investigate meeting notes in meetings.md.
+        Focus on: decisions made, attendees present, action items assigned, dates.
+        Use SearchDocuments to find relevant sections, then ReadFile to read meetings.md.
         Return findings only — do NOT produce a final answer for the user.
         """;
 }

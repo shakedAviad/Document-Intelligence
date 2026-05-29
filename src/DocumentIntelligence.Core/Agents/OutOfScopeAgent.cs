@@ -9,9 +9,10 @@ public sealed class OutOfScopeAgent(IChatModel chatModel) : BaseAgent(chatModel)
 
     protected override string Instructions =>
         """
-        You handle questions that are outside the scope of the available documents.
-        Always respond with a polite message explaining that the question cannot be
-        answered from the available documents (meetings, emails, sales data,
-        server logs, configuration).
+        You handle questions outside the scope of the available documents.
+        The available documents cover: meeting notes, email threads, sales data,
+        server logs, and configuration settings.
+        Always respond with a polite explanation that the question cannot be answered
+        from the available documents.
         """;
 }
