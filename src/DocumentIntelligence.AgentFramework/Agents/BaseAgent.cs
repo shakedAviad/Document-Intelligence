@@ -1,7 +1,7 @@
+using System.Text.Json;
 using DocumentIntelligence.AgentFramework.Llm;
 using DocumentIntelligence.AgentFramework.Models;
 using DocumentIntelligence.AgentFramework.Tools;
-using System.Text.Json;
 
 namespace DocumentIntelligence.AgentFramework.Agents;
 
@@ -65,7 +65,10 @@ public abstract class BaseAgent<TDecision>(IChatModel chatModel) : IAgent
     private List<AgentExecutionStep>? _currentSteps;
 
     protected void AddStep(string description)
-        => _currentSteps?.Add(new AgentExecutionStep(description));
+    {
+        _currentSteps?.Add(new AgentExecutionStep(description));
+        AgentProgress.Report(description);
+    }
 
     public async Task<AgentResult> ExecuteAsync(string input, CancellationToken cancellationToken = default)
     {
@@ -85,12 +88,7 @@ public abstract class BaseAgent<TDecision>(IChatModel chatModel) : IAgent
             {
                 TDecision? decision = await chatModel
                     .CompleteStructuredAsync<TDecision>(messages, cancellationToken)
-                    .ConfigureAwait(false);
-
-                if (decision is null)
-                {
-                    throw new InvalidOperationException("Chat model returned null decision");
-                }
+                    .ConfigureAwait(false) ?? throw new InvalidOperationException("Chat model returned null decision");
 
                 if (decision.IsComplete)
                 {
@@ -131,14 +129,15 @@ public abstract class BaseAgent<TDecision>(IChatModel chatModel) : IAgent
         if (tool is null)
         {
             ToolResult notFound = new(request.ToolName, $"Tool not found: {request.ToolName}");
-            AddStep($"Tool not found: {request.ToolName}");
+            AddStep($"[{Name}] Tool not found: {request.ToolName}");
             return notFound;
         }
 
         ToolResult result = await tool.ExecuteAsync(request.Input, cancellationToken).ConfigureAwait(false);
-        AddStep($"Tool executed: {tool.Name}");
+        AddStep($"[{Name}] Tool executed: {tool.Name}: {request.Input}");
         return result;
     }
+
 }
 
 public abstract class BaseAgent(IChatModel chatModel) : BaseAgent<AgentDecision>(chatModel)

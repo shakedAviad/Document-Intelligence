@@ -18,7 +18,7 @@ public class BaseAgentToolTests
         result.AgentName.Should().Be("AgentWithTool");
         result.Response.Should().Contain("ToolOutput: OK");
         result.Steps.Should().NotBeNull();
-        result.Steps.Should().Contain(s => s.Description == "Tool executed: MyTool");
+        result.Steps.Should().Contain(s => s.Description == "[AgentWithTool] Tool executed: MyTool: input");
     }
 
     [Fact]
@@ -29,7 +29,7 @@ public class BaseAgentToolTests
         AgentResult result = await agent.ExecuteAsync("input");
 
         result.Response.Should().Contain("ToolOutput: OK");
-        result.Steps.Should().Contain(s => s.Description == "Tool executed: MyTool");
+        result.Steps.Should().Contain(s => s.Description == "[AgentWithToolCase] Tool executed: MyTool: input");
     }
 
     [Fact]
@@ -40,7 +40,7 @@ public class BaseAgentToolTests
         AgentResult result = await agent.ExecuteAsync("input");
 
         result.Response.Should().Contain("Tool not found: MissingTool");
-        result.Steps.Should().Contain(s => s.Description == "Tool not found: MissingTool");
+        result.Steps.Should().Contain(s => s.Description == "[AgentWithMissingTool] Tool not found: MissingTool");
     }
 
     private class AgentWithTool : BaseAgent

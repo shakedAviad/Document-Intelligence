@@ -34,7 +34,7 @@ public class BaseAgentReasoningTests
         AgentResult result = await agent.ExecuteAsync("input");
 
         result.Response.Should().Be("Final after tool");
-        result.Steps.Should().Contain(s => s.Description == "Tool executed: MyTool");
+        result.Steps.Should().Contain(s => s.Description == "[ReasoningAgent] Tool executed: MyTool: input");
     }
 
     [Fact]
